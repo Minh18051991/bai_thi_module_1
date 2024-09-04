@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Management</title>
+    <style>
+        table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            color: black;
+            margin: 20px auto;
+            font-size: 14px;
+            border-radius: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h2>Cập nhật sách mới</h2>
+<form id="addBookForm">
+    <input type="text" id="codeBook" placeholder="Book Code" required>
+    <input type="text" id="nameBook" placeholder="Book Name" required>
+    <input type="number" id="yearPublication" placeholder="Year of Publication" required>
+    <input type="number" id="quantity" placeholder="Quantity" required>
+    <button type="submit">Add Book</button>
+</form>
+
+<h2>Book List</h2>
+
+<table id="bookTable">
+    <thead>
+    <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Year of Publication</th>
+        <th>Quantity</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<br>
+<form id="borrowBookForm">
+    <input type="text" id="borrowCode" placeholder="Book Code to Borrow" required><br>
+    <input type="number" id="borrowQuantity" placeholder="Quantity to Borrow" required><br>
+    <button type="submit">Borrow Book</button>
+</form>
+<script>
+    class Book {
+         constructor(codeBook, nameBook, yearPublication, quantity) {
+            this.codeBook = codeBook;
+            this.nameBook = nameBook;
+            this.yearPublication = yearPublication;
+            this.quantity = quantity;
+            this.status = quantity > 0;
+        }
+
+        updateQuantity(amount) {
+            this.quantity += amount;
+            this.status = this.quantity > 0;
+        }
+    }
+
+    class BookManager {
+         constructor() {
+            this.books = [
+                new Book("12345", "Toán", 2000, 3),
+                new Book("23456", "Văn", 1998, 5),
+                new Book("37456", "Tiếng Anh", 1999, 5)
+            ];
+
+            this.init();
+        }
+
+        validateCodeBook(codeBook) {
+            if (codeBook.length !== 5) {
+                return false;
+            }
+            if (codeBook[0] < '1' || codeBook[0] > '5') {
+                return false;
+            }
+            for (let i = 1; i < codeBook.length; i++) {
+                if (codeBook[i] < '0' || codeBook[i] > '9') {
+                    return false;
+                }
+            }
+            return true;
+        }
+        validateYear(yearPublication) {
+            let currentYear = new Date().getFullYear();
+            return yearPublication > 0 && yearPublication <= currentYear;
+        }
+
+        updateTable() {
+            let tableBody = document.querySelector("#bookTable tbody");
+            tableBody.innerHTML = "";
+            this.books.forEach(book => {
+                let row = tableBody.insertRow();
+                row.innerHTML = `
+            <td>${book.codeBook}</td>
+            <td>${book.nameBook}</td>
+            <td>${book.yearPublication}</td>
+            <td>${book.quantity}</td>
+            <td>${book.status ? "True" : "False"}</td>
+        `;
+            });
+        }
+
+
+        borrowBook(codeBook, quantity) {
+            let book = this.books.find(b => b.codeBook === codeBook);
+            if (book && book.quantity >= quantity) {
+                book.updateQuantity(-quantity);
+                this.updateTable();
+                alert("Mượn sách thành công");
+            } else {
+                alert("Hiện tại không có sách này");
+            }
+        }
+
+        handleAddBookFormSubmit(event) {
+            event.preventDefault();
+            let codeBook = document.getElementById("codeBook").value;
+            let nameBook = document.getElementById("nameBook").value;
+            let yearPublication = parseInt(document.getElementById("yearPublication").value);
+            let quantity = parseInt(document.getElementById("quantity").value);
+
+            if (!this.validateCodeBook(codeBook)) {
+                alert("Mã sách sai, nhập lại với ký tự đầu 1 ->5, ký tự còn lại 0 -> 9");
+                return;
+            }
+
+            if (!this.validateYear(yearPublication)) {
+                alert("Năm không hợp lệ, mời nhập lại");
+                return;
+            }
+
+            let existingBook = this.books.find(b => b.codeBook === codeBook);
+            if (existingBook) {
+                existingBook.updateQuantity(quantity); // Update quantity if book already exists
+            } else {
+                let newBook = new Book(codeBook, nameBook, yearPublication, quantity);
+                this.books.push(newBook);
+            }
+            this.updateTable();
+
+            alert("Đã cập nhập sách mới thành công");
+            document.getElementById("addBookForm").reset();
+        }
+
+        handleBorrowBookFormSubmit(event) {
+            event.preventDefault();
+
+            let borrowCode = document.getElementById("borrowCode").value;
+            let borrowQuantity = parseInt(document.getElementById("borrowQuantity").value);
+
+            if (borrowQuantity <= 0) {
+                alert("Số lượng mượn phải lớn hơn 0");
+                return;
+            }
+
+            this.borrowBook(borrowCode, borrowQuantity);
+            document.getElementById("borrowBookForm").reset();
+        }
+
+        init() {
+            this.updateTable();
+
+            document.getElementById("addBookForm").addEventListener("submit", this.handleAddBookFormSubmit.bind(this));
+            document.getElementById("borrowBookForm").addEventListener("submit", this.handleBorrowBookFormSubmit.bind(this));
+        }
+    }
+
+    new BookManager();
+</script>
+
+</body>
+</html>

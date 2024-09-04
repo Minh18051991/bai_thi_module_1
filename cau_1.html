@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    let n;
+    while (n < 0 || n >= 50 || isNaN(n) || !(n % 1 === 0)) {
+        n = prompt("nhập vào độ dài của mảng : ")
+    }
+    let array = [];
+    for (let i = 0; i < n; i++) {
+        array[i] = prompt(`Nhập phần tử thứ ${i} vào mảng `);
+    }
+    let result = 0;
+    let count = 0;
+    for (let j = 0; j < n; j++) {
+        if (j % 2 === 0 && array[j] % 2 !== 0){
+            result+= parseInt(array[j]);
+            count++;
+        }
+    }
+    document.write(result/count)
+
+</script>
+
+</body>
+</html>
